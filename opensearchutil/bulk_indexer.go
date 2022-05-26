@@ -550,13 +550,10 @@ func (w *worker) flush(ctx context.Context) error {
 	res, err := req.Do(ctx, w.bi.config.Client)
 	if err != nil {
 		atomic.AddUint64(&w.bi.stats.numFailed, uint64(len(w.items)))
-		if w.bi.config.OnError != nil {
-			w.bi.config.OnError(ctx, fmt.Errorf("flush: %s", err))
-		}
 
 		// calling the OnFailure hook to notify the failure
 		for _, item := range w.items {
-			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, err)
+			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, fmt.Errorf("flush: %s", err))
 		}
 
 		return fmt.Errorf("flush: %s", err)
@@ -566,25 +563,16 @@ func (w *worker) flush(ctx context.Context) error {
 	}
 	if res.IsError() {
 		atomic.AddUint64(&w.bi.stats.numFailed, uint64(len(w.items)))
-		// TODO(karmi): Wrap error (include response struct)
-		if w.bi.config.OnError != nil {
-			w.bi.config.OnError(ctx, fmt.Errorf("flush: %s", err))
-		}
 
 		// calling the OnFailure hook to notify the failure
 		for _, item := range w.items {
-			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, err)
+			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, fmt.Errorf("flush: %s", res.String()))
 		}
 
 		return fmt.Errorf("flush: %s", res.String())
 	}
 
 	if err := w.bi.config.Decoder.UnmarshalFromReader(res.Body, &blk); err != nil {
-		// TODO(karmi): Wrap error (include response struct)
-		if w.bi.config.OnError != nil {
-			w.bi.config.OnError(ctx, fmt.Errorf("flush: %s", err))
-		}
-
 		// calling the OnFailure hook to notify the failure
 		for _, item := range w.items {
 			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, err)
