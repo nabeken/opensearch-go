@@ -553,6 +553,12 @@ func (w *worker) flush(ctx context.Context) error {
 		if w.bi.config.OnError != nil {
 			w.bi.config.OnError(ctx, fmt.Errorf("flush: %s", err))
 		}
+
+		// calling the OnFailure hook to notify the failure
+		for _, item := range w.items {
+			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, err)
+		}
+
 		return fmt.Errorf("flush: %s", err)
 	}
 	if res.Body != nil {
@@ -564,6 +570,12 @@ func (w *worker) flush(ctx context.Context) error {
 		if w.bi.config.OnError != nil {
 			w.bi.config.OnError(ctx, fmt.Errorf("flush: %s", err))
 		}
+
+		// calling the OnFailure hook to notify the failure
+		for _, item := range w.items {
+			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, err)
+		}
+
 		return fmt.Errorf("flush: %s", res.String())
 	}
 
@@ -572,6 +584,12 @@ func (w *worker) flush(ctx context.Context) error {
 		if w.bi.config.OnError != nil {
 			w.bi.config.OnError(ctx, fmt.Errorf("flush: %s", err))
 		}
+
+		// calling the OnFailure hook to notify the failure
+		for _, item := range w.items {
+			item.OnFailure(ctx, item, BulkIndexerResponseItem{}, err)
+		}
+
 		return fmt.Errorf("flush: error parsing response body: %s", err)
 	}
 
