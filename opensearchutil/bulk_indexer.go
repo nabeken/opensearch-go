@@ -419,6 +419,10 @@ func (w *worker) run() {
 
 			w.items = append(w.items, item)
 			if w.buf.Len() >= w.bi.config.FlushBytes {
+				if w.bi.config.DebugLogger != nil {
+					w.bi.config.DebugLogger.Printf("[worker-%03d] Flushing due to exceeding FlushBytes (%d)\n", w.id, w.bi.config.FlushBytes)
+				}
+
 				if err := w.flush(ctx); err != nil {
 					w.mu.Unlock()
 					if w.bi.config.OnError != nil {
