@@ -35,8 +35,13 @@ func NewSigner(opts session.Options) (*Signer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get session from given option %v due to %s", opts, err)
 	}
+	return NewSignerWithSession(*awsSession)
+}
+
+// NewSignerWithSession returns an instance of Signer with a given awsSession.
+func NewSignerWithSession(awsSession session.Session) (*Signer, error) {
 	return &Signer{
-		session: *awsSession,
+		session: awsSession,
 		service: OpenSearchService,
 	}, nil
 }
